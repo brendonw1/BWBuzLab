@@ -1,0 +1,1 @@
+function d=getdir(pathname)%outputs a struct with info about what is in a directoryd=dir(pathname);d=d(3:end);
