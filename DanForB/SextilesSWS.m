@@ -1,3 +1,4 @@
+function SextilesSWS
 
 [names,dirs] = GetDefaultDataset;
 for a = 1:length(dirs);
@@ -7,9 +8,9 @@ for a = 1:length(dirs);
     load(fullfile(basepath,[basename '_WSRestrictedIntervals.mat']));
     load(fullfile(basepath,[basename '_StateRates.mat']));
  
-    SWSints = SWSPacketInts;
-    SWSints = intersect(SWSints,SleepInts);
-    SWSlen = Data(length(SWSints,'s'));
+    Epochints = SWSPacketInts;
+    Epochints = intersect(Epochints,SleepInts);
+    SWSlen = Data(length(Epochints,'s'));
 
     [~,sortrate] = sort(StateRates.EWSWakeRates);
     SeRates_W = StateRates.EWSWakeRates;
@@ -20,7 +21,7 @@ for a = 1:length(dirs);
     [spikemat,t] = SpktToSpkmat(Se, [], dt,overlap);
     spikemat = spikemat./(dt*overlap);
 
-    [unitepochs,droppedints] = IsolateEpochs2(spikemat,StartEnd(SWSints,'s'),SWSlen,1/dt);
+    [unitepochs,droppedints] = IsolateEpochs2(spikemat,StartEnd(Epochints,'s'),SWSlen,1/dt);
 
     %%
     numbins = 50;
@@ -36,24 +37,34 @@ for a = 1:length(dirs);
 end
 
 
-SePacketFR = [SeFRAll{:}];
+SeEpochFR = [SeFRAll{:}];
 SeRate = vertcat(SeRatesAll{:});
 [~,sortrate] = sort(SeRate);
 
 numdistbins = 6;
-FR_percentiles = SortedPercentiles(SePacketFR,sortrate,numdistbins);
+FR_percentiles = SortedPercentiles(SeEpochFR,sortrate,numdistbins);
 
+%% Save out
+SWSSextileData = v2struct(SeEpochFR,SeRate,FR_percentiles);
+savedir = fullfile(getdropbox,'BW OUTPUT','SleepProject','SpikeChanges','SextileAnalyses');
+MakeDirSaveVarThere(savedir,SWSSextileData);
 
+%% Calc Correlation stats for each sextile!
 
-    subplot(2,1,2)
-        set(gca, 'ColorOrder', OrangeColorsConfined(numdistbins));
-        hold all
-        plot(t_norm,log10(FR_percentiles),'LineWidth',3)
-        ylim([-1 0.5])
-        plot([0 0],get(gca,'ylim'),'k') 
-        plot([1 1],get(gca,'ylim'),'k') 
-        xlim([-0.1 1.1])
-        xlabel('NREM Episode Normalized Time');
-        ylabel('Mean FR (Hz)')
-        set(gca,'YTick',[-3:0.5:1])
-        set(gca,'YTickLabel',10.^[-3:0.5:1])
+%% Plot and save figures;
+h = figure('name','SWSSextiles');
+set(gca, 'ColorOrder', OrangeColorsConfined(numdistbins));
+hold all
+plot(t_norm,log10(FR_percentiles),'LineWidth',3)
+ylim([-1 0.5])
+plot([0 0],get(gca,'ylim'),'k') 
+plot([1 1],get(gca,'ylim'),'k') 
+xlim([-0.1 1.1])
+xlabel('SWS Episode Normalized Time');
+ylabel('Mean FR (Hz)')
+set(gca,'YTick',[-3:0.5:1])
+set(gca,'YTickLabel',10.^[-3:0.5:1])
+title('SWS Sextile Analysis')
+
+MakeDirSaveFigsThereAs(savedir,h,'fig')
+MakeDirSaveFigsThereAs(savedir,h,'png')

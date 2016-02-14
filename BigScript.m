@@ -63,6 +63,10 @@ end
 %% Detect EMG
 EMGCoherenceOverShanks(basepath,basename);
 
+%% Make an LFP.mat file
+% extract the nominated channels as int16s and save as a .mat
+
+
 %% Load Spikes
 %%NOTE ON THIS DATASET:
 % shank1 unstable at start of recording, where presleep is.  

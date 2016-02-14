@@ -16,12 +16,14 @@ t = load(fullfile(basepath,[basename '_SSubtypes.mat']));
 Se = t.Se;
 Si = t.Si;
 
-t = load(fullfile(basepath,[basename '_StateIntervals.mat']));
+t = load(fullfile(basepath,[basename '_StateIntervals.mat']));%from GatherStateIntervalSets.m
+% t = load(fullfile(basepath,[basename '_GoodSleepInterval.mat']));
 StateIntervals = t.StateIntervals;
 
 AllAllRates = Rate(S);
 AllWakeSleepRates = Rate(S,StateIntervals.WakeSleepCycles);
 AllWSWakeRates = Rate(S,StateIntervals.WSWake);
+AllWakeARates = Rate(S,StateIntervals.wakea);
 AllWSSleepRates = Rate(S,StateIntervals.WSSleep);
 AllREMRates = Rate(S,StateIntervals.REM);
 AllSWSRates = Rate(S,StateIntervals.SWS);
@@ -29,8 +31,10 @@ AllSWSRates = Rate(S,StateIntervals.SWS);
 % AllNMWakeRates = Rate(S,StateIntervals.NMWake);
 
 EAllRates = Rate(Se);
+% EAllWakeRates = Rate(Se,interasect(
 EWakeSleepRates = Rate(Se,StateIntervals.WakeSleepCycles);
 EWSWakeRates = Rate(Se,StateIntervals.WSWake);
+EWakeARates = Rate(Se,StateIntervals.wakea);
 EWSSleepRates = Rate(Se,StateIntervals.WSSleep);
 EREMRates = Rate(Se,StateIntervals.REM);
 ESWSRates = Rate(Se,StateIntervals.SWS);
@@ -44,6 +48,7 @@ if prod(size(Si))>0
     end
     IWakeSleepRates = Rate(Si,StateIntervals.WakeSleepCycles);
     IWSWakeRates = Rate(Si,StateIntervals.WSWake);
+    IWakeARates = Rate(Si,StateIntervals.wakea);
     IWSSleepRates = Rate(Si,StateIntervals.WSSleep);
     IREMRates = Rate(Si,StateIntervals.REM);
     ISWSRates = Rate(Si,StateIntervals.SWS);
@@ -53,6 +58,7 @@ else
     IAllRates = [];
     IWakeSleepRates = [];
     IWSWakeRates = [];
+    IWakeARates = [];
     IWSSleepRates = [];
     IREMRates = [];
     ISWSRates = [];
@@ -90,6 +96,7 @@ ILSWSRates = Rate(Si,StateIntervals.LSWS);
 StateRates = v2struct(AllAllRates,EAllRates,IAllRates,...
     AllWakeSleepRates,EWakeSleepRates,IWakeSleepRates,...
     AllWSWakeRates,EWSWakeRates,IWSWakeRates,...
+    AllWakeARates,EWakeARates,IWakeARates,...
     AllWSSleepRates,EWSSleepRates,IWSSleepRates,...
     AllREMRates,EREMRates,IREMRates,...
     AllSWSRates,ESWSRates,ISWSRates,...
