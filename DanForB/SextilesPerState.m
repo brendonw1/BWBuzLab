@@ -17,16 +17,13 @@ for a = 1:length(dirs);
     switch lower(sextilemode)
         case('old')
             load(fullfile(basepath,[basename '_StateRates_ForOldSextiles.mat']));
-            [~,sortrate] = sort(StateRates.EWakeRates);
             SeRates = StateRates.EWakeRates;
         case('wswake')
             load(fullfile(basepath,[basename '_StateRates.mat']));
-            [~,sortrate] = sort(StateRates.EWSWakeRates);
             SeRates = StateRates.EWSWakeRates;
         case('wakea')
             load(fullfile(basepath,[basename '_StateRates.mat']));
-            [~,sortrate] = sort(StateRates.EWakeARates);
-            SeRates = StateRates.EWSWakeRates;
+            SeRates = StateRates.EWakeARates;
     end
     
     switch lower(statename)
@@ -34,30 +31,36 @@ for a = 1:length(dirs);
             EpochInts = SleepInts;
             dt = 0.5; %s per mini-bin
             overlap = 10;%number of minibins til no overlap
+            numbins = 50;
         case {'sws','nrem','swspacket','nrempacket'}
             EpochInts = SWSPacketInts;
             EpochInts = intersect(EpochInts,SleepInts);
             dt = 0.5; %s
             overlap = 10;
+            numbins = 50;
         case {'swsep','nremep','swsepisode','nremepisode'}
             EpochInts = SWSEpisodeInts;
             EpochInts = intersect(EpochInts,SleepInts);
             dt = 0.5; %s
             overlap = 10;
+            numbins = 50;
         case 'rem'
             EpochInts = REMInts;
             EpochInts = intersect(EpochInts,SleepInts);
             dt = 0.5; %s
             overlap = 10;
+            numbins = 50;
         case 'ma'
             EpochInts = MAInts;
             EpochInts = intersect(EpochInts,SleepInts);
             dt = 0.1; %s
-            overlap = 1;
+            overlap = 10;
+            numbins = 20;
         case 'wake'            
             EpochInts = WakeInts;
             dt = 0.5; %s
             overlap = 10;
+            numbins = 50;
     end
     EpochLen = Data(length(EpochInts,'s'));
 
@@ -71,7 +74,6 @@ for a = 1:length(dirs);
     if ~isempty(unitepochs) 
 
         %%
-        numbins = 50;
         [normunit] = TimeNormalize(unitepochs,numbins*3);
         t_norm = [1:numbins*3]/numbins-1;
 
@@ -107,6 +109,8 @@ SeRate = vertcat(SeRatesAll{:});
 
 numdistbins = 6;
 [FR_percentile_means,FR_percentile_sds,FR_percentile_raw] = SortedPercentiles(SeEpochFR,sortrate,numdistbins);
+
+disp(['n = ' num2str(length(SeRate))])
 
 %% Calculate correlations for each sextile vs normalized time:
 corrmode = 'popmean';

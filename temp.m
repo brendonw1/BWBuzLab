@@ -1,4 +1,4 @@
-function [SeRate,SeRateUnsorted] = temp(sextilemode)
+function [SeRateUnsorted] = temp(sextilemode)
 % sname can be 'SWS','REM','WAKE' or 'MA"
 if ~exist('sextilemode','var')
     sextilemode = 'WSWake';
@@ -30,7 +30,7 @@ end
 
 SeRate = vertcat(SeRatesAll{:});
 SeRateUnsorted = SeRate;
-[~,sortrate] = sort(SeRate);
+% [~,sortrate] = sort(SeRate);
 
 
 

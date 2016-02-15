@@ -369,7 +369,7 @@ switch(lower(ep1))
             outeps2{a} = outeps1{a};
         end 
     
-    case 'flrem' %- gather first vs last SWS episodes
+    case 'flrem' %- gather first vs last REM episodes
         for a = 1:numWSEpisodes;
             thissleep = subset(WSEpisodes{a},2);
             theserems = intersect(ints.REMInts,thissleep);
@@ -457,6 +457,23 @@ switch(lower(ep1))
             
             outeps1{a} = pre;
             outeps2{a} = sws;
+        end
+    case 'flma' %- gather first vs last REM episodes
+        for a = 1:numWSEpisodes;
+            thissleep = subset(WSEpisodes{a},2);
+            thesemas = intersect(ints.MAInts,thissleep);
+
+            t1 = [];
+            t2 = [];
+            if ~isempty(thesemas)
+                if length(length(thesemas))>1
+                    t1 = subset(thesemas,1);
+                    t2 = subset(thesemas,length(length(thesemas)));
+                end
+            end
+            
+            outeps1{a} = t1;
+            outeps2{a} = t2;
         end
     case 'ma13thirds' %third of individual sws intervals
         for a = 1:numWSEpisodes;

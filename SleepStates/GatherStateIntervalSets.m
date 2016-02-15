@@ -108,6 +108,10 @@ load(fullfile(basepath,[basename '_StateIDA.mat']),'stateintervals')
 for a = 1:length(stateintervals)%convert to intervalsets
     stateintervals{a} = intervalSet(stateintervals{a}(:,1)*10000,stateintervals{a}(:,2)*10000);
 end
+% load(fullfile(basepath,[basename '_WSRestrictedIntervals.mat']))
+% wakestarts = Start(WakeInts,'s');%find official wake episodes
+% wakeends = End(WakeInts,'s');
+
 WS = DefineWakeSleepWakeEpisodes(basepath,basename,stateintervals,RestrictInterval);
 wakestarts = Start(WS.WEpisodes,'s');%find official wake episodes
 wakeends = End(WS.WEpisodes,'s');
