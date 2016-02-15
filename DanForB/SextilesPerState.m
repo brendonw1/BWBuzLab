@@ -69,13 +69,17 @@ for a = 1:length(dirs);
     [spikemat,t] = SpktToSpkmat(Se, [], dt,overlap);
     spikemat = spikemat./(dt*overlap);
 
-    [unitepochs,droppedints] = IsolateEpochs2(spikemat,StartEnd(EpochInts,'s'),EpochLen,1/dt,'includeNaN');
+%     [unitepochs,droppedints] = IsolateEpochs2(spikemat,StartEnd(EpochInts,'s'),EpochLen,1/dt,'includeNaN');
+    pad = 0.5;
+    numallbins = numbins+numbins*pad*2;
+    [unitepochs,droppedints] = IsolateEpochs2(spikemat,EpochInts,round(pad*EpochLen),1/dt);
 
     if ~isempty(unitepochs) 
 
         %%
-        [normunit] = TimeNormalize(unitepochs,numbins*3);
-        t_norm = [1:numbins*3]/numbins-1;
+        [normunit] = TimeNormalize(unitepochs,numallbins);
+%         t_norm = [1:numbins*3]/numbins-1;
+        t_norm = [-pad*numbins+0.5:numbins+numbins*pad-0.5]/numbins;
 
         %% handle masks ie if need to take out all non-SWS parts of sleep
         if strcmp(statename,'sleep')%doing this later because need t first
@@ -83,8 +87,8 @@ for a = 1:length(dirs);
             badperiods = StartEnd(minus(EpochInts,SWSPacketInts),'s');%anything ouside packets is bad
             badperiods = INTtoIDX({badperiods*sf},length(t));%convert to vector
             badperiods = double(badperiods>0);%find bad bins
-            [maskepochs] = IsolateEpochs2(badperiods,StartEnd(EpochInts,'s'),EpochLen,1/dt,'includeNaN');%grab relevant epcochs of bins
-            [normmask] = TimeNormalize(maskepochs,numbins*3);%time normalize
+            [maskepochs] = IsolateEpochs2(badperiods,StartEnd(EpochInts,'s'),round(pad*EpochLen),1/dt,'includeNaN');%grab relevant epcochs of bins
+            [normmask] = TimeNormalize(maskepochs,numbins+numbins*pad*2);%time normalize
             numsleeps = size(normunit,1);
             for ee = 1:numsleeps
                 normunit{ee}(normmask{ee}>0.5,:) = NaN;
@@ -116,21 +120,23 @@ disp(['n = ' num2str(length(SeRate))])
 corrmode = 'popmean';
 switch corrmode
     case 'popmean'
-        centert = t_norm(numbins+1:numbins+numbins);
-        centervals = FR_percentile_means(numbins+1:numbins+numbins,:);
+        centralbins = t_norm>=0 & t_norm<=1;
+        centert = t_norm(centralbins);
+        centervals = FR_percentile_means(centralbins,:);
         [r,p] = corr(centert',centervals);
-    case 'percellpctchange'
-        for a = 1:numdistbins
-            percellbaseline = nanmean(FR_percentile_raw{a}(numbins:numbins+1,:),1);
-            FRPctChgPerCell = FR_percentile_raw{a}./repmat(percellbaseline,numbins*3,1);
-            linearchanges = FRPctChgPerCell(:);
-            linearchanges(linearchanges==Inf) = max(linearchanges<Inf);
-            linearchanges(linearchanges==-Inf) = min(linearchanges>-Inf);
-            linearchanges(isnan(linearchanges)) = 1;%from 0/0
-            lineartimes = repmat(t_norm,size(FR_percentile_raw{a},2),1)';
-            lineartimes = lineartimes(:);
-            [r(a),p(a)] = corr(lineartimes,linearchanges);
-        end
+%     case 'percellpctchange'
+%         for a = 1:numdistbins
+%             basebin = find(t_norm>=0,1,'first');
+%             percellbaseline = nanmean(FR_percentile_raw{a}(basebin,:),1);
+%             FRPctChgPerCell = FR_percentile_raw{a}./repmat(percellbaseline,numbins*3,1);
+%             linearchanges = FRPctChgPerCell(:);
+%             linearchanges(linearchanges==Inf) = max(linearchanges<Inf);
+%             linearchanges(linearchanges==-Inf) = min(linearchanges>-Inf);
+%             linearchanges(isnan(linearchanges)) = 1;%from 0/0
+%             lineartimes = repmat(t_norm,size(FR_percentile_raw{a},2),1)';
+%             lineartimes = lineartimes(:);
+%             [r(a),p(a)] = corr(lineartimes,linearchanges);
+%         end
 end
 corrtable = {'Sextile','R:','P:';...
     '-','-','-';...
@@ -147,7 +153,7 @@ savedir = fullfile(getdropbox,'BW OUTPUT','SleepProject','SpikeChanges','Sextile
 eval(['MakeDirSaveVarThere(savedir,' statename 'SextileData);'])
 
 %% Plot and save figures;
-overhang = 0.5;
+displayoverhang = 0.5;
 
 h = figure('name',[statename 'BasedOn' sextilemode 'Sextiles']);
 subplot(2,1,1)
@@ -158,7 +164,7 @@ ylim(log10([min(min(FR_percentile_means)) max(max(FR_percentile_means))]))
 % ylim([-1 0.5])
 plot([0 0],get(gca,'ylim'),'k') 
 plot([1 1],get(gca,'ylim'),'k') 
-xlim([-overhang 1+overhang])
+xlim([-displayoverhang 1+displayoverhang])
 xlabel([statename ' Episode Normalized Time']);
 ylabel('Mean FR (Hz)')
 set(gca,'YTick',[-3:0.5:1])
